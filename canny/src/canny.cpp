@@ -1,30 +1,4 @@
-#include <iostream>
-#include <opencv2/opencv.hpp>
-
-using namespace cv;
-using namespace std;
-
-class canny{
-private:
-    int upper;
-    int lower;
-    Mat image;
-    Mat src;
-    Mat edges;
-    Mat magnitude;
-    Mat slopes;
-    int x,y;
-    void followEdges();
-    void edgeDetect();
-    void nonMaximumSuppression();
-public:
-    canny(Mat src,int upper,int lower):src(src),upper(upper),lower(lower){
-        cout<<"created object"<<endl;
-        MyCanny();
-    }; 
-    ~canny(){cout<<"object_destroyed"<<endl;};   
-    void MyCanny();
-};
+#include "canny.h"
 
 void canny::followEdges() {
     
@@ -118,25 +92,17 @@ void canny::nonMaximumSuppression() {
             if(pos.x < magnitude.cols-1 && *itMag <= magnitude.at<float>(pos.y, pos.x+1)) {
                 magnitude.at<float>(pos.y, pos.x) = 0;
             }
-        }
+        }        
         
-        
-        
-    }
-    
-    
+    }   
     
 }
 
 
 void canny::MyCanny() {
-    
-    
-    image = src.clone();;
-    
-    //convert to grayscale
-    //cvtColor(src, image, CV_BGR2GRAY);
-    
+
+    image = src.clone();
+
     //Noise reduction
     GaussianBlur(src, image, Size(3, 3), 1.5);
 
@@ -147,7 +113,7 @@ void canny::MyCanny() {
     Sobel(image, magY, CV_32F, 0, 1, 3);
     
     //calculate slope
-    slopes = Mat(image.rows, image.cols, CV_32F); //directions are calculated in the nonMaximumSuppression method
+    slopes = Mat(image.rows, image.cols, CV_32F); 
     divide(magY, magX, slopes);
 
     //caclulate magnitude of the gradient at each pixel
@@ -157,36 +123,20 @@ void canny::MyCanny() {
     multiply(magX, magX, prodX);
     multiply(magY, magY, prodY);
     sum = prodX + prodY;
-    sqrt(sum, sum);
-    
+    sqrt(sum, sum);    
     magnitude = sum.clone();
     
     //Non Maximum Suppression
-    nonMaximumSuppression();
-    
-    //edge detection and following
-    edgeDetect();
-
-    //string s1 = "edge";
-    //string s2 = argv[1];
-    //string outName = s1 + s2;
-    
-    imshow("original", src);
-    imshow("edges", edges);
-    waitKey();
-    
+    nonMaximumSuppression();    
+    //Hysterisis
+    edgeDetect();   
 
 }
 
+void canny::show_edges(){
+    imshow("edges", edges);
+}
 
-int main(int argc, const char * argv[])
-{
-    
-    Mat input;
-    input = imread(argv[1], 0); //reads as greyscale
-    int upper = atoi(argv[2]);
-    int lower = atoi(argv[3]);
-    canny image1(input,upper,lower);
-    //image1.MyCanny();
-    return 0;
+Mat canny::get_edges(){
+    return edges;
 }
