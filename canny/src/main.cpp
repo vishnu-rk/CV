@@ -12,8 +12,7 @@ int main(int argc, const char * argv[])
     image1.show_edges();
     waitKey();
     Mat output=image1.get_edges();
-    imshow("edges2",output);
+    imshow("edges",output);
     waitKey();
-
     return 0;
 }
