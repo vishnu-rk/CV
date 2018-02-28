@@ -1,31 +1,25 @@
 #include "harris.h"
-
-float k = 0.25;
-int boxFilterSize = 3;
-int maximaSuppressionDimension = 10;
-int markDimension = 5;
-float percentage=0.00041;
-Mat m_img;
-
-void doHarris(Mat m_img) {
-    Harris harris(m_img, k, boxFilterSize);
-    vector<pointData> resPts = harris.getMaximaPoints(percentage, boxFilterSize, maximaSuppressionDimension);
-    Mat _img = harris.MarkInImage(m_img,resPts, markDimension);
-    imshow("HarrisCornerDetector", _img);
-}
-
 int main(int argc, char** argv) {
-    // read image from file + error handling
+    float k = 0.25;                         //multiplication factor in cornerness function
+    int boxFilterSize = 3;                  //filter size
+    int maximaSuppressionDimension = 10;    //supression radius
+    int markDimension = 5;                  //size of box around key point
+    float percentage=0.00041;               //percentage of best keypoints to be detected
+    //read image from file
     Mat img;
     if (argc == 1) {
-        cout << "No image provided! Usage: ./Ex1 [path to image]" << endl << "Using default image: haus.jpg" << endl;
-        img = imread("haus.jpg");
+        cout << "No image provided!"<< endl;
+        return 0;
     } else {
         img = imread(argv[1]);
     }
-    img.copyTo(m_img);
     namedWindow("HarrisCornerDetector", 1);
-    doHarris(m_img);
+    //call harris object
+    Harris harris(img, k, boxFilterSize,percentage,maximaSuppressionDimension,markDimension);
+    //mark harris corners on image
+    Mat _img=harris.MarkInImage();
+    //display image
+    imshow("HarrisCornerDetector", _img);
     waitKey(0);
     return 0;
 }

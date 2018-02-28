@@ -1,16 +1,16 @@
 #include "harris.h"
 
-Harris::Harris(Mat img, float k, int filterRange) {
+Harris::Harris(Mat img, float k, int filterRange,float percentage, int suppressionRadius, int radius):img(img),k(k),filterRange(filterRange),percentage(percentage),suppressionRadius(suppressionRadius),radius(radius) {
     //Convert to greyscalescale image
-    Mat greyscaleImg = convertRgbToGrayscale(img);
+    this->greyscaleImg = this->convertRgbToGrayscale();
     //Compute Derivatives
-    Derivatives derivatives = computeDerivatives(greyscaleImg);
+    this->derivatives = computeDerivatives();
     //Compute Harris Responses
-    Mat harrisResponses = computeHarrisResponses(k, derivatives);
-    m_harrisResponses = harrisResponses;
+    this->m_harrisResponses = computeHarrisResponses();
+    this->points=this->getMaximaPoints();
 }
 
-vector<pointData> Harris::getMaximaPoints(float percentage, int filterRange, int suppressionRadius) {
+vector<pointData> Harris::getMaximaPoints() {
     // Declare a max suppression matrix
     Mat maximaSuppressionMat(m_harrisResponses.rows, m_harrisResponses.cols, CV_32F, Scalar::all(0));
     // Create a vector of all Points
@@ -61,7 +61,7 @@ vector<pointData> Harris::getMaximaPoints(float percentage, int filterRange, int
 }
 
 
-Mat Harris::convertRgbToGrayscale(Mat& img) {
+Mat Harris::convertRgbToGrayscale() {
     Mat greyscaleImg;
     cvtColor(img, greyscaleImg, CV_BGR2GRAY);
     return greyscaleImg;
@@ -69,7 +69,7 @@ Mat Harris::convertRgbToGrayscale(Mat& img) {
 
 
 
-Derivatives Harris::computeDerivatives(Mat& greyscaleImg) {
+Derivatives Harris::computeDerivatives() {
     //Using Sobel for derivaties
     Mat Ix(greyscaleImg.rows-2, greyscaleImg.cols-2, CV_32F);
     Mat Iy(greyscaleImg.rows-2, greyscaleImg.cols-2, CV_32F);
@@ -85,7 +85,8 @@ Derivatives Harris::computeDerivatives(Mat& greyscaleImg) {
 }
 
 
-Mat Harris::computeHarrisResponses(float k, Derivatives& d) {
+Mat Harris::computeHarrisResponses() {
+    Derivatives d=this->derivatives;
     Mat M(d.Iy.rows, d.Ix.cols, CV_32F);
     for(int r=0; r<d.Iy.rows; r++) {  
         for(int c=0; c<d.Iy.cols; c++) {
@@ -103,7 +104,7 @@ Mat Harris::computeHarrisResponses(float k, Derivatives& d) {
 }
 
 
-Mat Harris::MarkInImage(Mat& img,vector<pointData> points, int radius) {
+Mat Harris::MarkInImage() {
     Mat retImg;
     img.copyTo(retImg);
     for(vector<pointData>::iterator it = points.begin(); it != points.end(); ++it) {
